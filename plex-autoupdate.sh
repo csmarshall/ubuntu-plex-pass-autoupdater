@@ -7,6 +7,18 @@ ts () {
         echo $*
 }
 
+clean_up () {
+    local EXIT_CODE=${1} 
+    if [[ -e "${DPKG_FILE}" ]] ; then
+        ts "Removing ${DPKG_FILE}"
+        rm ${DPKG_FILE}
+    fi
+    ts "All Done"
+    exit ${EXIT_CODE}
+}
+
+trap clean_up SIGHUP SIGINT SIGTERM
+
 usage () {
   echo "$0 PLEX_PASS_TOKEN"
   exit 1
@@ -30,7 +42,7 @@ determine_installed_version () {
   INSTALLED_PLEX_VERSION=$(dpkg -l plexmediaserver 2>/dev/null | grep plexmediaserver  | awk '{print $3}')
   if [ -z "${INSTALLED_PLEX_VERSION}" ] ; then
     ts "plexmediaserver is not installed according to dpkg, investigate...exit 1"
-    exit 1
+    clean_up 1
   else 
     ts "plexmediaserver version ${INSTALLED_PLEX_VERSION} installed"
   fi
@@ -49,26 +61,26 @@ should_i_upgrade () {
   local INSTALLED_PLEX_VERSION=${1}
   local AVAILABLE_PLEX_VERSION=${2}
   INSTALLED_PLEX_INT=$(echo ${INSTALLED_PLEX_VERSION} | sed -e 's/[-\.]//g') 
-  AVAILABLE_PLEX_INT=$(echo ${INSTALLED_PLEX_VERSION} | sed -e 's/[-\.]//g') 
+  AVAILABLE_PLEX_INT=$(echo ${AVAILABLE_PLEX_VERSION} | sed -e 's/[-\.]//g') 
   if [[ "${AVAILABLE_PLEX_INT}" -gt "${INSTALLED_PLEX_INT}" ]] ; then
     ts "Available version: ${AVAILABLE_PLEX_VERSION} newer than installed: ${INSTALLED_PLEX_VERSION}, should upgrade!"
   elif [[ "${AVAILABLE_PLEX_INT}" -eq "${INSTALLED_PLEX_INT}" ]] ; then
     ts "Available version: ${AVAILABLE_PLEX_VERSION} is already installed: ${INSTALLED_PLEX_VERSION}"
-    exit 0
+    clean_up 0
   fi 
 }
 
 download_and_install () {
   local AVAILABLE_PLEX_URL=${1}
-  DPKG_FILE="/tmp/$(basename ${AVAILABLE_PLEX_URL})"
+  export DPKG_FILE="/tmp/$(basename ${AVAILABLE_PLEX_URL})"
   ts "Downloading ${AVAILABLE_PLEX_URL} to ${DPKG_FILE} "
   curl -o ${DPKG_FILE} ${AVAILABLE_PLEX_URL} 
   ts "Installing ${DPKG_FILE}"
   dpkg -i ${DPKG_FILE} ; check_exit "install" ${?}
   if [[ "${?}" -eq "0" ]]; then
-    determine_installed_plexmediaserver
+    determine_installed_version
   else
-    ts "plexmediaserver dpkg install failed"
+    clean_up 1
   fi
   rm -v ${DPKG_FILE}
 }
@@ -94,12 +106,10 @@ determine_available_version ${HW_PLATFORM} ${PLEX_PASS_TOKEN}
 
 ### Should I upgrade?
 should_i_upgrade "${INSTALLED_PLEX_VERSION}" "${AVAILABLE_PLEX_VERSION}"
-echo should_i_upgrade "${INSTALLED_PLEX_VERSION}" "${AVAILABLE_PLEX_VERSION}"
 
 ### Upgrade
 download_and_install ${AVAILABLE_PLEX_URL}
 
 ### 
-ts "Done"
-echo
+clean_up 0
 
