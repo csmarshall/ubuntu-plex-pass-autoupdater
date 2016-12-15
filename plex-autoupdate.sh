@@ -42,10 +42,10 @@ determine_installed_version () {
   INSTALLED_PLEX_VERSION=$(dpkg -l plexmediaserver 2>/dev/null | grep plexmediaserver  | awk '{print $3}')
   if [ -z "${INSTALLED_PLEX_VERSION}" ] ; then
     ts "plexmediaserver is not installed according to dpkg"
-    determine_available_version
-    ts "Download plex from this URL: ${AVAILABLE_PLEX_URL}"
+    determine_available_version ${HW_PLATFORM} ${PLEX_PASS_TOKEN}
+    ts "Use the following command to install plex"
     local DPKG_FILE="/tmp/$(basename ${AVAILABLE_PLEX_URL})"
-    echo "curl -o ${DPKG_FILE} ${AVAILABLE_PLEX_URL} && sudo dpkg -i ${DPKG_FILE} \; rm ${DPKG_FILE}"
+    echo "curl -o ${DPKG_FILE} ${AVAILABLE_PLEX_URL} && sudo dpkg -i ${DPKG_FILE} && rm ${DPKG_FILE}"
     clean_up 1
   else 
     ts "plexmediaserver version ${INSTALLED_PLEX_VERSION} installed"
