@@ -97,7 +97,7 @@ if [ -z "${PLEX_PASS_TOKEN}" ] ; then
 fi
 
 ### Start
-ts "Start ${0} ${*}"
+ts "Start ${0}"
 
 ### System
 determine_system
