@@ -64,8 +64,8 @@ determine_available_version () {
 should_i_upgrade () {
   local INSTALLED_PLEX_VERSION=${1}
   local AVAILABLE_PLEX_VERSION=${2}
-  INSTALLED_PLEX_INT=$(echo ${INSTALLED_PLEX_VERSION} | sed -e 's/[-\.]//g') 
-  AVAILABLE_PLEX_INT=$(echo ${AVAILABLE_PLEX_VERSION} | sed -e 's/[-\.]//g') 
+  INSTALLED_PLEX_INT=$(echo ${INSTALLED_PLEX_VERSION} | sed -e 's/[-\.]//g' -e 's/[^0-9]*//g') 
+  AVAILABLE_PLEX_INT=$(echo ${AVAILABLE_PLEX_VERSION} | sed -e 's/[-\.]//g' -e 's/[^0-9]*//g') 
   if [[ "${AVAILABLE_PLEX_INT}" -gt "${INSTALLED_PLEX_INT}" ]] ; then
     ts "Available version: ${AVAILABLE_PLEX_VERSION} newer than installed: ${INSTALLED_PLEX_VERSION}, should upgrade!"
   elif [[ "${AVAILABLE_PLEX_INT}" -eq "${INSTALLED_PLEX_INT}" ]] ; then
