@@ -3,8 +3,7 @@
 
 #Timestamp Function for logging info
 ts () {
-        echo -n "$(date +'%F-%R:%S ')"
-        echo $*
+        echo "$(date +'%F-%R:%S ')$*" >&2
 }
 
 clean_up () {
@@ -64,6 +63,7 @@ determine_available_version () {
 should_i_upgrade () {
   local INSTALLED_PLEX_VERSION=${1}
   local AVAILABLE_PLEX_VERSION=${2}
+  export ORIGINAL_INSTALLED_PLEX_VERSION=${1}
   INSTALLED_PLEX_INT=$(echo ${INSTALLED_PLEX_VERSION} | sed -e 's/[-\.]//g' -e 's/[^0-9]*//g') 
   AVAILABLE_PLEX_INT=$(echo ${AVAILABLE_PLEX_VERSION} | sed -e 's/[-\.]//g' -e 's/[^0-9]*//g') 
   if [[ "${AVAILABLE_PLEX_INT}" -gt "${INSTALLED_PLEX_INT}" ]] ; then
@@ -113,6 +113,9 @@ should_i_upgrade "${INSTALLED_PLEX_VERSION}" "${AVAILABLE_PLEX_VERSION}"
 
 ### Upgrade
 download_and_install ${AVAILABLE_PLEX_URL}
+
+ts "Plex upgraded from ${ORIGINAL_INSTALLED_PLEX_VERSION} to ${AVAILABLE_PLEX_VERSION}" 
+
 
 ### 
 clean_up 0
