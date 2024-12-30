@@ -55,7 +55,7 @@ determine_available_version () {
   local HW_PLATFORM="${1}"
   local PLEX_PASS_TOKEN="${2}"
   ts "Querying plex.tv for current plexmediaserver URL"
-  export AVAILABLE_PLEX_URL=$(curl -v "https://plex.tv/downloads/latest/5?channel=8&build=linux-${HW_PLATFORM}&distro=debian&X-Plex-Token=${PLEX_PASS_TOKEN}" 2>&1 | grep '^..location' | sed -e 's/^.*: //g' -e 's/\r//g')
+  export AVAILABLE_PLEX_URL=$(curl -v "https://plex.tv/downloads/latest/5?channel=8&build=linux-${HW_PLATFORM}&distro=debian&X-Plex-Token=${PLEX_PASS_TOKEN}" 2>&1 | grep -e '^..[lL]ocation' | sed -e 's/^.*: //g' -e 's/\r//g')
   export AVAILABLE_PLEX_VERSION=$(basename ${AVAILABLE_PLEX_URL} | awk -F_ '{print $2}')
   ts "plexmediaserver version ${AVAILABLE_PLEX_VERSION} available from plex.tv"
 }
